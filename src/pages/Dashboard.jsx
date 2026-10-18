@@ -1,0 +1,23 @@
+import {useMemo,useState} from 'react';
+import {useStore} from '../store.jsx';
+import {INSTANSI,ST,fit,fmt,groupBy,periodLabel} from '../lib/utils.js';
+import {Badge,Carousel,Marquee,PageHead,Panel,Stepper} from '../components/ui.jsx';
+import {BarChart,Donut} from '../components/Chart.jsx';
+export default function Dashboard(){const {user,kebun,panen:all,organisasi,anggota}=useStore(),[per,setPer]=useState(''),[gr,setGr]=useState('bulanan'),
+panen=useMemo(()=>per?all.filter(p=>p.t.startsWith(per)):all,[all,per]),months=useMemo(()=>[...new Set(all.map(p=>p.t.slice(0,7)))].sort(),[all]);
+const d=useMemo(()=>{const v=panen.filter(p=>p.st==='valid'),by=s=>panen.filter(p=>p.st===s).length;
+const g=groupBy(v,p=>p.t.slice(0,7),gr),bars=Object.keys(g).sort().map(k=>({k:periodLabel(k,gr),v:g[k].reduce((a,p)=>a+p.kg,0)}));
+return{tot:v.reduce((a,p)=>a+p.kg,0),bars,w:by('menunggu'),f:by('perlu_konfirmasi')+by('ditolak'),ok:v.length>0,seg:['valid','menunggu','perlu_konfirmasi','ditolak','draf'].map(s=>({s,n:by(s)}))}},[panen,gr]);
+const recent=useMemo(()=>panen.slice(-5).reverse(),[panen]),peran=user.peran;
+const bpdp=peran==='validator'&&user.instansi==='bpdp';
+const scope=bpdp?'Ringkasan agregat sesuai kesepakatan akses':peran==='pengurus'?(user.namaOrganisasi||'Kelembagaan Anda'):peran==='validator'&&user.instansi==='mitra'?'Kelompok dalam kemitraan':peran==='admin'?'Seluruh data':'Wilayah kewenangan '+INSTANSI[user.instansi];
+const extra=(peran==="admin"||bpdp)?[[organisasi.length,"Organisasi terdaftar"],[anggota.length,"Anggota terdaftar"]]:[];
+  const stats=[...extra,[kebun.length,'Kebun terdaftar'],[fmt(d.tot/1000)+' ton','Total TBS valid, Jul–Okt 2026'],[d.w,'Menunggu validasi'],[d.f,'Perlu perbaikan / ditolak']];
+return <><PageHead crumbs={[{l:'SIPANDAI',to:'/dashboard'},{l:'Dashboard'}]} title={peran==='validator'?'Dashboard Validasi':peran==='pengurus'?'Dashboard Kelembagaan':'Dashboard'} actions={<div className="flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm text-mute">Granulasi<select className="h-10 rounded-xl border border-line bg-surface px-3 text-ink" value={gr} onChange={e=>setGr(e.target.value)}><option value="bulanan">Bulanan</option><option value="semester">Semester</option><option value="tahunan">Tahunan</option></select></label><label className="flex items-center gap-2 text-sm text-mute">Periode<select className="h-10 rounded-xl border border-line bg-surface px-3 text-ink" value={per} onChange={e=>setPer(e.target.value)}><option value="">Semua</option>{months.map(m=><option key={m}>{m}</option>)}</select></label></div>}/>
+<div className="grid gap-6 lg:grid-cols-[2fr_1fr]"><div className="grid gap-6">
+<Panel title={scope}><dl className="grid grid-cols-2 gap-y-6 md:grid-cols-4 md:divide-x md:divide-line">{stats.map(([v,l],i)=><div key={l} className={i?'md:pl-6':''}><dd className="font-mono text-3xl font-medium tracking-tighter tabular-nums">{v}</dd><dt className="mt-1 text-xs text-mute">{l}</dt></div>)}</dl></Panel>
+<Panel title={`Produksi TBS valid per ${gr} (kg)`}><BarChart data={d.bars}/></Panel></div>
+<div className="grid content-start gap-6"><Panel title="Alur data"><Stepper steps={['Input data','Konfirmasi PKS','Validasi','Hitung hasil']} done={[true,panen.some(p=>p.pks),kebun.some(k=>k.ver==='terverifikasi')&&d.ok,d.ok]}/></Panel><Panel title="Status catatan panen"><Donut seg={d.seg}/></Panel></div></div>
+<Marquee className="my-8 text-mute" items={recent.map(p=>`${p.kode}  ${fmt(p.kg)} kg  ${ST[p.st]}`)}/>
+<div className="grid gap-6"><Panel title="Kebun"><Carousel label="Daftar kebun">{kebun.map(k=><article key={k.id} className="w-72 shrink-0 snap-start rounded-2xl bg-tint/60 p-4 ring-1 ring-line"><svg viewBox="0 0 160 90" className="h-24 w-full rounded-xl bg-forest" aria-hidden="true"><polygon points={fit(k.pts,160,90,12)} className="fill-palm/40 stroke-palm" strokeWidth="2"/></svg><p className="mt-3 font-semibold tracking-tight">{k.id}</p><p className="text-sm text-mute">{k.own}</p><div className="mt-3 flex items-center justify-between"><span className="font-mono text-sm tabular-nums">{fmt(k.luas)} Ha</span><Badge s={k.ver}/></div></article>)}</Carousel></Panel>
+<Panel title="Catatan terbaru"><Carousel label="Catatan panen terbaru">{recent.map(p=><article key={p.id} className="w-64 shrink-0 snap-start rounded-2xl bg-tint/60 p-4 ring-1 ring-line"><p className="font-semibold tracking-tight">{p.kode}</p><p className="text-sm text-mute">{p.k} · {p.t}</p><div className="mt-3 flex items-center justify-between"><span className="font-mono text-sm tabular-nums">{fmt(p.kg)} kg</span><Badge s={p.st}/></div></article>)}</Carousel></Panel></div></>}

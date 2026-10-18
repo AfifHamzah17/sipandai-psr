@@ -1,0 +1,11 @@
+import {sq} from '../lib/utils.js';
+export const seedKebun=[
+{id:'KEB-0001',own:'Abdul Halim',luas:1.9911,thn:2023,tan:'sudah_menghasilkan',ver:'terverifikasi',pts:sq(40,40,150,132)},
+{id:'KEB-0002',own:'Abd Rajab Siregar',luas:1.9925,thn:2023,tan:'sudah_menghasilkan',ver:'belum',pts:sq(250,60,130,120)},
+{id:'KEB-0003',own:'Abdul Rahman Nasution',luas:1.9104,thn:2025,tan:'belum_menghasilkan',ver:'belum',pts:sq(430,40,120,128)}];
+export const mk=(id,k,t,kg,st,no,rev=0,cat='')=>({id,kode:'PN-'+t.replace(/-/g,'')+'-000'+(39+id),k,t,kg,jj:Math.round(kg/2.6),sum:'tiket_timbang',no,file:no?['tiket-'+no+'.pdf']:[],st,rev,cat});
+export const seedPanen=[mk(1,'KEB-0001','2026-07-15',1200,'valid','TT-0715'),mk(2,'KEB-0001','2026-08-12',1320,'valid','TT-0812'),mk(3,'KEB-0001','2026-09-10',1250,'valid','TT-0910'),mk(4,'KEB-0001','2026-09-24',1380,'valid','TT-0924'),mk(5,'KEB-0002','2026-09-18',900,'menunggu','TT-0918'),mk(6,'KEB-0001','2026-10-05',1100,'perlu_konfirmasi','TT-1005',0,'Foto tiket tidak terbaca, mohon unggah ulang'),mk(7,'KEB-0002','2026-10-08',700,'draf','')];
+export const seedOrg=[{id:'org_001',kode:'GPK-2025-0001',nama:'Perkumpulan Kelompok Tani Perkebunan Pasir Tuntung Jaya',jenis:'poktan',desa:'Pasir Tuntung',kec:'Kota Pinang',kab:'Labuhanbatu Selatan',prov:'Sumatera Utara',pengurus:'Haposan Manurung',telp:'082368275284',st:'aktif'}];
+export const seedAgt=[['ABD RAJAB SIREGAR','1222010404610005'],['ABDUL HALIM','1222011106570001'],['ABDUL RAHMAN NASUTION','1222010809910003'],['ABDULLAH DAULAY','1222033112620081'],['ADE PUTRA HASIBUAN','1222012105690002']].map(([nama,nik],i)=>({id:'agt_00'+(i+1),kode:'AGT-000'+(i+1),org:'org_001',nama,nik,telp:'',st:'aktif'}));
+export const seedUsers=[['Ilham Nasution','ilham@mail.com','pengurus','org_001','Pasir Tuntung Jaya'],['Validator Dinas Pertanian','dinas@mail.com','dinas','','Kab. Labuhanbatu Selatan'],['Validator Perusahaan Mitra','mitra01@mail.com','mitra','','Kemitraan km_001'],['Petugas BPDP','bpdp@mail.com','bpdp','','Sesuai kesepakatan'],['Administrator','admin@mail.com','admin','','Global']].map(([nama,email,peran,org,cakupan],i)=>({id:'u_00'+(i+1),nama,email,peran,org,cakupan,st:'aktif'}));
+export const seedKemitraan=[{id:'km_001',org:'org_001',mitra:'mitra01@mail.com',kebun:'KEB-0001, KEB-0002',st:'aktif'}];
